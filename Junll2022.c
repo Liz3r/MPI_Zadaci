@@ -11,7 +11,7 @@
 //broj kolona po procesu
 #define k 2
 
-//Paralelni sistemi - Jan ll 2023  // 2. zadatak a)b)
+//Paralelni sistemi - Jan ll 2022  // 2. zadatak a)b)
 
 void main(int argc, char* argv[]) {
 	
@@ -155,4 +155,4 @@ void main(int argc, char* argv[]) {
 	MPI_Finalize();
 }
 
-//mpiexec -n 4 Junll2023.exe
+//mpiexec -n 4 Junll2022.exe
