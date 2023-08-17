@@ -111,6 +111,7 @@ public class Klijent {
             zatraziSort(niz1,sId);
             zatraziSort(niz2,sId);
             //System.out.println("Delim" + this.id);
+			//ovde ne valjda nesto idk
         }
     }
 
