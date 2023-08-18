@@ -27,7 +27,7 @@ public class Sistem {
      */
     public static void main(String[] args) throws JMSException, NamingException {
         
-        int id = 0;
+
         
         Klijent k1 = new Klijent();
         Klijent k2 = new Klijent();

@@ -20,7 +20,7 @@ import javax.naming.NamingException;
 
 public class Klijent {
 
-    public static int idGen = 0;
+    public static int idGen = 1;
     private int id;
     
     private final QueueConnection qc;
@@ -30,7 +30,7 @@ public class Klijent {
     private final QueueSender senderTraziSort;
     private final QueueSender senderSortiranog;
     private QueueReceiver traziSortListener;
-    private MessageConsumer vratiSortListener;
+    private QueueReceiver vratiSortListener;
     private MessageConsumer vratiSortListenerDrugi;
     
     public Klijent() throws NamingException, JMSException
@@ -48,10 +48,11 @@ public class Klijent {
       ictx.close();
       
       qc = (QueueConnection) qcf.createQueueConnection();
-      qs = (QueueSession) qc.createSession(true, Session.AUTO_ACKNOWLEDGE);
+      qs = (QueueSession) qc.createQueueSession(true, Session.AUTO_ACKNOWLEDGE);
       
       senderTraziSort = qs.createSender(qTrazimSort);
       senderSortiranog = qs.createSender(qVratiSort);
+      
      
       
     }
@@ -62,17 +63,21 @@ public class Klijent {
         traziSortListener = qs.createReceiver(qTrazimSort);
         vratiSortListener = qs.createReceiver(qVratiSort,"kome = "+ this.id);
         
+        qc.start();
+        
         traziSortListener.setMessageListener(new nekoTraziSortListener(this));
         vratiSortListener.setMessageListener(new vracamSortListener(this));
         
-        qc.start();
+        
     }
 
     
     public void zatraziSort(ArrayList<Integer> niz, int sortId) throws JMSException{
+        
         ObjectMessage sendMsg = qs.createObjectMessage(niz);
         sendMsg.setIntProperty("koTrazi", id);
-        sendMsg.setIntProperty("SortId", sortId);
+        int si = sortId;
+        sendMsg.setIntProperty("SortId", si);
         
         senderTraziSort.send(sendMsg);
         qs.commit();
@@ -82,18 +87,19 @@ public class Klijent {
         
         ObjectMessage msg = (ObjectMessage) message;
         ArrayList<Integer> niz = (ArrayList<Integer>)msg.getObject();
+        
         int sId = msg.getIntProperty("SortId");
         
         int len = niz.size();
         
         if(len == 1){
-            int koTrazi = msg.getIntProperty("koTrazi");
+            /*int koTrazi = msg.getIntProperty("koTrazi");
             ObjectMessage sm = qs.createObjectMessage(niz);
             sm.setIntProperty("SortId", sId);
             sm.setIntProperty("kome", koTrazi);
             senderSortiranog.send(sm);
-            qs.commit();
-            System.out.println("1");
+            qs.commit();*/
+            //System.out.println(this.id);
             
         }else{
             
@@ -107,11 +113,23 @@ public class Klijent {
                     niz2.add(niz.get(i));
                 }
             }
+            System.out.print("ID: " + this.id);
+            System.out.print("Niz1: ");
+            for(Integer el : niz1){
+                System.out.print(el);
+                System.out.print(" ");
+            }
+            System.out.println();
+            System.out.print("Niz2: ");
+            for(Integer el : niz2){
+                System.out.print(el);
+                System.out.print(" ");
+            }
+            System.out.println();
             
-            zatraziSort(niz1,sId);
-            zatraziSort(niz2,sId);
-            //System.out.println("Delim" + this.id);
-			//ovde ne valjda nesto idk
+            this.zatraziSort(niz1,sId);
+            this.zatraziSort(niz2,sId);
+            
         }
     }
 
