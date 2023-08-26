@@ -29,23 +29,21 @@ public class Sistem {
         
 
         
-        Klijent k1 = new Klijent();
-        Klijent k2 = new Klijent();
-        Klijent k3 = new Klijent();
-        Klijent k4 = new Klijent();
-        Klijent k5 = new Klijent();
-        Klijent k6 = new Klijent();
-        Klijent k7 = new Klijent();
+        Klijent k1 = new Klijent(1);
+        Klijent k2 = new Klijent(2);
+        Klijent k3 = new Klijent(3);
+        
+        k1.DodajPosao("Fotokopiranje");
+        k2.DodajPosao("Stampanje");
+        k2.DodajPosao("Pecatiranje");
+        k3.DodajPosao("Stampanje");
         
         k1.start();
         k2.start();
         k3.start();
-        k4.start();
-        k5.start();
-        k6.start();
-        k7.start();
         
         
+        k1.Pomoc("Stampanje");
      
         
     }
