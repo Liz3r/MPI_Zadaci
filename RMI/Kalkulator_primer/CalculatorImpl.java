@@ -12,6 +12,7 @@ public class CalculatorImpl extends UnicastRemoteObject implements Calculator{
     {
         super();
     };
+    
     @Override
     public long saberi(long a, long b) throws RemoteException {
         return a + b;

@@ -33,11 +33,20 @@ public class CalculatorServer {
         }
     }
     
-    public static void main(String args[]) throws IOException{
+    public static void main(String[] args){
+        
     
-        new CalculatorServer(args[0],args[1],args[2]);
-    
-        System.in.read();
+        try {
+            String a0 = "localhost";
+            String a1 = "1007";
+            String a2 = "calculator";
+            new CalculatorServer(a0,a1,a2);
+            
+            System.in.read();
+            System.exit(0);
+        } catch (IOException ex) {
+            Logger.getLogger(CalculatorServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }
 }
