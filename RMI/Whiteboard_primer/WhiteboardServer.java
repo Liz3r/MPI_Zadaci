@@ -11,19 +11,20 @@ import java.rmi.server.UnicastRemoteObject;
 public class WhiteboardServer{
     
     
-    public WhiteboardServer(String host, String port, String service) throws RemoteException, MalformedURLException{
+    
+    
+    public static void main(String[] args) throws RemoteException, MalformedURLException, IOException{
+        
+        String host = "localhost";
+        String port = "1004";
+        String service = "whiteboard";
         
         LocateRegistry.createRegistry(Integer.parseInt(port));
         
         Whiteboard obj = new WhiteboardImpl();
+        
         //rmi://localhost:1003/whiteboard
         Naming.rebind("rmi://"+host+":"+port+"/"+service, obj);
-        
-    }
-    
-    public static void main(String[] args) throws RemoteException, MalformedURLException, IOException{
-        
-        new WhiteboardServer("localhost","1003","whiteboard");
         System.in.read();
     }
 }

@@ -14,7 +14,7 @@ public class WhiteboardClient {
     public static void main(String[] args) throws NotBoundException, MalformedURLException, RemoteException{
         
         String host = "localhost";
-        String port = "1003";
+        String port = "1004";
         String service = "whiteboard";
         
         
@@ -42,13 +42,14 @@ public class WhiteboardClient {
                     boolean indikator = (boolean)sc.nextBoolean();
                     
                     obj.dodajOblik(type, bojaIspune, bojaLinije, indikator);
-                    
+                    break;
                 case "read":
                     int i = 0;
                     for(IShape s : obj.preuzmiStanje()){
                         System.out.print(++i + ":   ");
                         s.showShape();
                     }
+                    break;
                 case "exit":
                     return;
                     

@@ -17,7 +17,7 @@ public class WhiteboardImpl extends UnicastRemoteObject implements Whiteboard{
 
     @Override
     public boolean dodajOblik(int type, String bojaIspune, String bojaLinije, boolean indikatorIspunjenosti) throws RemoteException {
-        Shape ns = new Shape(type,bojaIspune, bojaLinije, indikatorIspunjenosti);
+        IShape ns = new Shape(type,bojaIspune, bojaLinije, indikatorIspunjenosti);
         shapes.addElement(ns);
         return true;
     }

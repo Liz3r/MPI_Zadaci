@@ -1,9 +1,10 @@
 
 package rmi_proba;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 
-class Shape implements IShape{
+class Shape implements IShape, Serializable{
 
     int type;
     String bojaIspune;
