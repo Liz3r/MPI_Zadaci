@@ -108,11 +108,6 @@ void main(int argc, char* argv[]) {
 		printf("proces koji prikazuje: %d\n", prikazRank);
 	}
 	
-	/*for (int i = 0; i < n; i++) {
-		printf("%d ", koloneProizvodB[i]);
-	}
-	printf("\n");*/
-	
 	//MPI_Reduce(&koloneProizvodB[0], &koloneProizvodBPrikaz[0], n, MPI_UNSIGNED_LONG, MPI_PROD, prikazRank, MPI_COMM_WORLD);
 	
 	if (myRank == prikazRank) {
@@ -123,24 +118,6 @@ void main(int argc, char* argv[]) {
 		printf("\n");
 	}
 	
-	//----------------
-
-	/*printf("Proces %d, moje kolone:\n", myRank);
-	for (int i = 0; i < q; i++) {
-		for (int j = 0; j < n; j++) {
-			printf("%d ", mojeKolone[i][j]);
-		}
-		printf("\n");
-	}
-	printf("Proces %d, moje vrste:\n", myRank);
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < q; j++) {
-			printf("%d ", mojeVrste[j][i]);
-		}
-		printf("\n");
-	}*/
-
-	
 	for (int i = 0; i < q; i++) {
 		for (int j = 0; j < q; j++) {
 			C[(myRank / q) + j][(myRank % q) + i] = 0;
@@ -149,7 +126,7 @@ void main(int argc, char* argv[]) {
 			}
 		}
 	}
-	
+
 	MPI_Reduce(&C[0][0], &prikazC[0][0], n* n, MPI_INT, MPI_MAX, prikazRank, MPI_COMM_WORLD);
 
 
