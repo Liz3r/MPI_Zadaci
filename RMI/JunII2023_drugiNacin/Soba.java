@@ -5,7 +5,7 @@ import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class Soba extends UnicastRemoteObject implements ISoba,Serializable{
+public class Soba extends UnicastRemoteObject implements ISoba{
 
     static int idGen = 0;
     int id;
