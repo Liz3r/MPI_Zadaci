@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <climits>
 
-#define n 8
-#define k 16
-#define q 4
- 
+#define n 16
+#define k 8
+#define q 2
+
 void main(int argc, char* argv[]) {
 	
 	int myRank, np, root = 0;
@@ -18,21 +18,20 @@ void main(int argc, char* argv[]) {
 
 	int A[n][k];
 	int B[k][n];
+
+	int mojeKoloneA[n][q];
+	int mojeVrsteB[q][n];
+
+	int mojiRezultati[n][n];
+
+	int mojeSumeKolonaB[n];
+	int sumeKolonaB[n];
+	
+	int mojMax = -999999;
+
+	int prikazProc;
+
 	int C[n][n];
-	int prikazC[n][n];
-
-	int mojeKolone[q][n];
-	int mojeVrste[q][n];
-
-	int proizvodKolona[q];
-	int mojMax = 0;
-
-	int prikazRank;
-
-	int mojiRezultati[q][q];
-
-	unsigned long koloneProizvodB[n];
-	unsigned long koloneProizvodBPrikaz[n];
 
 	if (myRank == 0) {
 
@@ -44,103 +43,101 @@ void main(int argc, char* argv[]) {
 			}
 			printf("\n");
 		}
-		printf("\n");
 
 		printf("Matrica B:\n");
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < n; j++) {
-				B[i][j] = i * n + j + 21;
+				B[i][j] = i * k + j + 1;
 				printf("%d ", B[i][j]);
 			}
 			printf("\n");
 		}
-		printf("\n");
-		//---------------------------------------
 
 
-		int slanjeA[q][n];
-		//nesto se ubaguje kad se salje redom (i =  0 -> np) pa proces 0 dobije pogresne vrednosti
-		for (int i = (np-1); i >= 0; i--) {
+
+		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < q; j++) {
-				for (int p = 0; p < n; p++) {
-					slanjeA[j][p] = A[p][(i * q + j)%k];
+				mojeKoloneA[i][j] = A[i][j];
+			}
+		}
+
+		int slanjeA[n][q];
+		for (int p = 1; p < np; p++) {
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < q; j++) {
+					slanjeA[i][j] = A[i][p*q+j];
 				}
 			}
-			MPI_Isend(&slanjeA[0][0], q * n, MPI_INT, i, 0, MPI_COMM_WORLD, &req);
-			MPI_Isend(&B[(i * q)/n][0], q * n, MPI_INT, i, 1, MPI_COMM_WORLD, &req);
+
+			MPI_Send(&slanjeA[0][0], q * n, MPI_INT, p, 2, MPI_COMM_WORLD);
 		}
 
 	}
+	else {
 
-	MPI_Recv(&mojeKolone[0][0], q * n, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	MPI_Recv(&mojeVrste[0][0], q * n, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(&mojeKoloneA[0][0], q * n, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	}
 
-	
+	MPI_Scatter(&B[0][0], q * n, MPI_INT, &mojeVrsteB, q * n, MPI_INT, 0, MPI_COMM_WORLD);
 
-	//deo proizvoda elemenata  vrste matrice b
-	// i max element u vrstama iz b koje poseduje n-ti proces
+
 	for (int i = 0; i < n; i++) {
-		koloneProizvodB[i] = 1;
-		koloneProizvodBPrikaz[i] = 1;
-		for (int j = 0; j < q; j++) {
-			koloneProizvodB[i] *= mojeVrste[j][i];
-			if (mojMax < mojeVrste[i][j]) {
-				mojMax = mojeVrste[i][j];
-			}
+		for (int j = 0; j < n; j++) {
+			mojiRezultati[i][j] = 0;
 		}
 	}
-	
-	printf("Proces %d moj max element: %d\n", myRank, mojMax);
-	
-	struct {
-		int rank;
-		int value;
-	}in,out;
-
-	in.rank = myRank;
-	in.value = mojMax;
-
-	MPI_Allreduce(&in, &out, 1, MPI_2INT, MPI_MAXLOC, MPI_COMM_WORLD);
-	
-	prikazRank = out.rank;
-	
-	if (myRank == prikazRank) {
-		printf("proces koji prikazuje: %d\n", prikazRank);
-	}
-	
-	//MPI_Reduce(&koloneProizvodB[0], &koloneProizvodBPrikaz[0], n, MPI_UNSIGNED_LONG, MPI_PROD, prikazRank, MPI_COMM_WORLD);
-	
-	if (myRank == prikazRank) {
-		printf("proces %d proizvod elemenata u kolonama iz B: \n", prikazRank);
-		for (int i = 0; i < n; i++) {
-			printf("%d ", koloneProizvodBPrikaz[i]);
-		}
-		printf("\n");
-	}
-	
-	for (int i = 0; i < q; i++) {
-		for (int j = 0; j < q; j++) {
-			C[(myRank / q) + j][(myRank % q) + i] = 0;
-			for (int p = 0; p < n; p++) {
-				C[myRank/q + j][myRank%q + i] += mojeKolone[i][p] * mojeVrste[j][p];
-			}
-		}
-	}
-
-	MPI_Reduce(&C[0][0], &prikazC[0][0], n* n, MPI_INT, MPI_MAX, prikazRank, MPI_COMM_WORLD);
-
-
-	if (myRank == prikazRank) {
-		printf("Konacno C:\n");
+	for (int o = 0; o < q; o++) {
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
-				printf("%d ", prikazC[i][j]);
+				mojiRezultati[i][j] += mojeKoloneA[i][o] * mojeVrsteB[o][j];
+			}
+		}
+	}
+
+	//sume kolona B
+
+	for (int i = 0; i < n; i++) {
+		mojeSumeKolonaB[i] = 0;
+		for (int j = 0; j < q; j++) {
+			mojeSumeKolonaB[i] += mojeVrsteB[j][i];
+			//odmah se nadje i maximalna vrednost matrice B svakog procesa
+			if (mojMax < mojeVrsteB[j][i])
+				mojMax = mojeVrsteB[j][i];
+		}
+	}
+
+	struct {
+		int val;
+		int rank;
+	}in,out;
+
+	in.val = mojMax;
+	in.rank = myRank;
+
+	MPI_Allreduce(&in, &out, 1, MPI_2INT, MPI_MAXLOC, MPI_COMM_WORLD);
+
+	prikazProc = out.rank;
+
+	MPI_Reduce(&mojeSumeKolonaB[0], &sumeKolonaB[0], n, MPI_INT, MPI_SUM, prikazProc, MPI_COMM_WORLD);
+
+	MPI_Reduce(&mojiRezultati[0][0], &C[0][0], n * n, MPI_INT, MPI_SUM, prikazProc, MPI_COMM_WORLD);
+
+	if (myRank == prikazProc) {
+		printf("Rezultat P%d C[][]:\n",myRank);
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				printf("%d ",C[i][j]);
 			}
 			printf("\n");
 		}
+
+		printf("Sume kolona B:\n");
+		for (int i = 0; i < n; i++) {
+			printf("%d ", sumeKolonaB[i]);
+		}
 	}
-	
+
 	MPI_Finalize();
 }
 
-//mpiexec -n 16 ...
+//mpiexec -n 4 mpi_build.exe
