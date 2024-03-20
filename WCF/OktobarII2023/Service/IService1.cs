@@ -9,34 +9,36 @@ using System.Text;
 
 namespace TurnirService
 {
+
     [ServiceContract]
-    public interface IService1
-    {
+    public interface IService1 {
 
         [OperationContract]
-        bool Prijavi(Student stud, string disciplina);
+        void Prijava(Student stud, string disciplina);
 
         [OperationContract]
-        bool Odjavi(Student stud, string disciplina);
+        void Odjava(Student stud, string disciplina);
 
         [OperationContract]
-        string Prijavljeno(Student stud);
+        string PrikaziPrijavljeno(Student stud);
 
         [OperationContract]
-        string StudenataPoDisciplini();
+        string BrojStudenataPoDisciplini(string disciplina);
 
         [OperationContract]
-        string grupeIUcesnici(string disciplina);
-        
+        string PrikaziGrupe();
     }
 
+
     [DataContract]
-    public class Student 
-    {
+    public class Student {
+
         int index;
         string ime;
         string prezime;
-        double ocena;
+        double prosek;
+
+
 
         [DataMember]
         public int Index
@@ -51,20 +53,23 @@ namespace TurnirService
             get { return ime; }
             set { ime = value; }
         }
+
         [DataMember]
         public string Prezime
         {
             get { return prezime; }
             set { prezime = value; }
         }
+
         [DataMember]
-        public double Ocena
+        public double Prosek
         {
-            get { return ocena; }
-            set { ocena = value; }
+            get { return prosek; }
+            set { prosek = value; }
         }
+
     }
 
-    
+
 
 }

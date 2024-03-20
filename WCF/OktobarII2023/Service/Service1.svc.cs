@@ -12,160 +12,215 @@ namespace TurnirService
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class Service1 : IService1
     {
-        Hashtable nazivi;
-        int brGrupa;
-        int ucesnikaPoGrupi;
-        Student[,,] grupe;
-        public Service1() {
 
-            brGrupa = 5;
-            ucesnikaPoGrupi = 16;
+        List<Disciplina> discipline;
+        Disciplina d1 = new Disciplina("Fudbal");
+        Disciplina d2 = new Disciplina("Kosarka");
 
-            
-            nazivi = new Hashtable();
-            nazivi["Fudbal"] = 0;
-            nazivi["Kosarka"] = 1;
-            nazivi["Odbojka"] = 2;
-            //...
-            //   [indeksi naziva disciplina, broj grupa u odredjenoj disciplini, broj ucesnika u grupi] 
-            grupe = new Student[nazivi.Count,5,16];
-            for(int i = 0; i <  nazivi.Count; i++)
+        Service1()
+        {
+            discipline= new List<Disciplina>();
+            Disciplina d1 = new Disciplina("Fudbal");
+            Disciplina d2 = new Disciplina("Kosarka");
+            discipline.Add(d1);
+            discipline.Add(d2);
+        }
+
+     
+
+        public string BrojStudenataPoDisciplini(string disciplina)
+        {
+            string ret = "";
+            foreach (Disciplina d in discipline)
             {
-                
-                for(int j = 0; j < brGrupa; j++)
+                ret += d.StudPoDisciplini() + "\n";
+            }
+            return ret;
+        }
+
+        public void Odjava(Student stud, string disciplina)
+        {
+            foreach (Disciplina d in discipline)
+            {
+                if(d.naziv == disciplina)
                 {
-                    for(int p = 0; p < ucesnikaPoGrupi; p++)
+                    d.Odjavi(stud);
+                }
+            }
+        }
+
+        public void Prijava(Student stud, string disciplina)
+        {
+            foreach(Disciplina d in discipline)
+            {
+                if(d.naziv == disciplina)
+                {
+                    d.DodajStudenta(stud);
+                    break;
+                }   
+            }
+
+        }
+
+        public string PrikaziGrupe()
+        {
+            string ret = "";
+            foreach (Disciplina d in discipline)
+            {
+                 ret += d.Prikaz();
+            }
+            return ret;
+        }
+
+        public string PrikaziPrijavljeno(Student stud)
+        {
+            string ret = "Prijave studenta " + stud.Index + " " + stud.Ime + " " + stud.Prezime + ":\n";
+            foreach (Disciplina d in discipline)
+            {
+                ret += d.Prijavio(stud);
+            }
+            return ret;
+        }
+    }
+
+
+    public class Disciplina
+    {
+        public string naziv;
+        public int brojPrijavljenih;
+        public List<List<Student>> prijavljeni;
+
+        public Disciplina(string naziv)
+        {
+            this.naziv = naziv;
+            prijavljeni = new List<List<Student>>();
+        }
+
+        public string Prijavio(Student stud)
+        {
+            foreach (List<Student> grupa in prijavljeni)
+            {
+                foreach(Student studGrp in grupa)
+                {
+                    if(studGrp.Index == stud.Index)
                     {
-                        grupe[i, j, p] = null;
+                        return this.naziv + " ";
+                    }
+                }
+            }
+            return "";
+        }
+
+        public void Rebalansiranje()
+        {
+            foreach (List<Student> grupa in prijavljeni)
+            {
+                if (grupa.Count > 1)
+                {
+                    for (int i = 0; i < grupa.Count; i++)
+                    {
+                        for (int j = i + 1; j < grupa.Count; j++)
+                        {
+                            if (grupa.ElementAt(i).Prosek < grupa.ElementAt(j).Prosek)
+                            {
+                                Student tmp = grupa.ElementAt(i);
+                                grupa.Insert(i, grupa.ElementAt(j));
+                                grupa.RemoveAt(i + 1);
+
+                                grupa.Insert(j, tmp);
+                                grupa.RemoveAt(j + 1);
+                            }
+                        }
+                    }
+                }
+
+            }
+            foreach (List<Student> grupa in prijavljeni)
+            {
+                if(grupa.Count == 8)
+                for(int i = 0; i < grupa.Count-1; i++)
+                {
+                    foreach (List<Student> grupaProvera in prijavljeni)
+                    {
+                            if(grupa.ElementAt(i).Prosek < grupaProvera.ElementAt(i + 1).Prosek)
+                            {
+                                Student tmp = grupa.ElementAt(i);
+                                grupa.Insert(i, grupaProvera.ElementAt(i + 1));
+                                grupa.RemoveAt(i + 1);
+
+                                grupaProvera.Insert(i + 1,tmp);
+                                grupaProvera.RemoveAt(i + 2);
+                                i = 0;
+                            }
                     }
                 }
             }
         }
 
-        public string grupeIUcesnici(string disciplina)
+        public void DodajStudenta(Student stud)
+        {
+            if(prijavljeni != null)
+            foreach(List<Student> grupa in prijavljeni)
+            {
+                if(grupa.Count < 8)
+                {
+                    grupa.Add(stud);
+                    return;
+                }
+            }
+            List<Student> novaGrupa = new List<Student>();
+            novaGrupa.Add(stud);
+            prijavljeni.Add(novaGrupa);
+        }
+
+        public string Prikaz()
         {
             string ret = "";
 
-            for (int i = 0; i < brGrupa; i++)
+            foreach(List<Student> grupa in prijavljeni)
             {
-                ret += "Grupa " + i + ": \n";
-                for (int j = 0; j < ucesnikaPoGrupi; j++)
+                ret += "Grupa " + prijavljeni.IndexOf(grupa) + ":\n";
+                foreach(Student stud in grupa)
                 {
-                    if (grupe[(int)nazivi[disciplina], i, j] != null)
-                    {
-                        ret += grupe[(int)nazivi[disciplina], i, j].Ime + " "
-                            + grupe[(int)nazivi[disciplina], i, j].Prezime + " "
-                            + grupe[(int)nazivi[disciplina], i, j].Index + " "
-                            + grupe[(int)nazivi[disciplina], i, j].Ocena + " | ";
-                    }
+                    ret += "" + stud.Index + " " + stud.Ime + " " + stud.Prezime + " " + stud.Prosek + "||\n";
                 }
                 ret += "\n";
             }
 
-            return ret;
-
-        }
-
-        public bool Odjavi(Student stud, string disciplina)
-        {
-
-            if (nazivi[disciplina] == null)
-                return false;
-
-            for(int i = 0; i < brGrupa; i++)
-            {
-                for(int j = 0; j < ucesnikaPoGrupi; j++)
-                {
-
-                    if (grupe[(int)nazivi[disciplina], i, j] != null && grupe[(int)nazivi[disciplina], i, j].Index == stud.Index) 
-                    {
-                        grupe[(int)nazivi[disciplina], i, j] = null;
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        public bool Prijavi(Student stud, string disciplina)
-        {
-            if (nazivi[disciplina] == null)
-                return false;
-
-            for (int i = 0; i < brGrupa; i++)
-            {
-                for (int j = 0; j < ucesnikaPoGrupi; j++)
-                {
-                    if (grupe[(int)nazivi[disciplina], i, j] == null)
-                    {
-                        grupe[(int)nazivi[disciplina], i, j] = stud;
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        public string Prijavljeno(Student stud)
-        {
-            string ret = "";
-
-            for (int p = 0; p < nazivi.Count; p++)
-            {
-                for (int i = 0; i < brGrupa; i++)
-                {
-                    for (int j = 0; j < ucesnikaPoGrupi; j++)
-                    {
-                        if(grupe[p, i, j] != null && grupe[p,i,j].Index == stud.Index)
-                        {
-                            string[] nzk = new string[nazivi.Count];
-                            nazivi.Keys.CopyTo(nzk, 0);
-
-                            ret += nzk[p] + " ";
-                        }
-                    }
-                }
-            }
+            Rebalansiranje();
             return ret;
         }
 
-        public string StudenataPoDisciplini()
+        public string StudPoDisciplini()
         {
-            string ret = "";
-            int count;
+            string ret = this.naziv;
 
-            string[] nzk = new string[nazivi.Count];
-            nazivi.Keys.CopyTo(nzk, 0);
-
-            for (int i = 0; i < nazivi.Count; i++)
+            int ukupno = 0;
+            foreach (List<Student> grupa in prijavljeni)
             {
-                ret += nzk[i];
-                ret += ": ";
-
-                count = 0;
-
-                for (int j = 0; j < brGrupa; j++)
-                {
-                    for(int p = 0; p < ucesnikaPoGrupi; p++)
-                    {
-                        if(grupe[i,j,p] != null)
-                        {
-                            count++;
-                            break;
-                        }
-                    }
-                }
-
-                ret += count + "\n";
+                ukupno += grupa.Count;
             }
+
+            ret += ": " + ukupno + "\n";
 
             return ret;
         }
 
-
-        private void Rebalansiraj()
+        public void Odjavi(Student stud)
         {
-            //... rebalansiranje matrice 
+            foreach (List<Student> grupa in prijavljeni)
+            {
+                foreach(Student studGrp in grupa)
+                {
+                    if(stud.Index == studGrp.Index)
+                    {
+                        grupa.Remove(stud);
+                        return;
+                    }
+                }
+            }
         }
+
     }
+
 }
